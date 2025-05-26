@@ -5,14 +5,24 @@ const TILE_SIZE = 32;
 const MAP_ROWS = 16;
 const MAP_COLS = 16;
 
-// 0: 草, 1: 木
+// タイルマップ: 0=草, 1=木
 const map = [
   [0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0],
   [0,0,0,1,1,1,1,0,0,1,0,0,0,0,0,0],
   [0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0],
   [1,1,1,0,0,0,1,1,1,1,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0],
-  // ... 続く
+  [0,1,1,1,0,0,0,0,1,1,1,0,0,0,0,0],
+  [0,1,0,1,0,0,0,0,1,0,1,0,0,0,0,0],
+  [0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+  [0,1,0,0,1,1,1,1,0,0,1,0,0,0,0,0],
+  [0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0],
+  [0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0],
+  [0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0],
+  [0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ];
 
 const tileImage = new Image();
@@ -42,11 +52,10 @@ function drawMap() {
 function drawPlayer() {
   ctx.drawImage(
     playerImage,
-    0, 0, 32, 32,
+    0, 0, TILE_SIZE, TILE_SIZE,
     player.x * TILE_SIZE,
     player.y * TILE_SIZE,
-    TILE_SIZE,
-    TILE_SIZE
+    TILE_SIZE, TILE_SIZE
   );
 }
 
@@ -57,13 +66,22 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+// 移動処理（壁判定なし）
 window.addEventListener('keydown', e => {
-  if (e.key === 'ArrowUp') player.y--;
-  if (e.key === 'ArrowDown') player.y++;
-  if (e.key === 'ArrowLeft') player.x--;
-  if (e.key === 'ArrowRight') player.x++;
+  if (e.key === 'ArrowUp')    player.y = Math.max(0, player.y - 1);
+  if (e.key === 'ArrowDown')  player.y = Math.min(MAP_ROWS - 1, player.y + 1);
+  if (e.key === 'ArrowLeft')  player.x = Math.max(0, player.x - 1);
+  if (e.key === 'ArrowRight') player.x = Math.min(MAP_COLS - 1, player.x + 1);
 });
 
-tileImage.onload = () => {
-  gameLoop();
-};
+// 両方の画像が読み込まれてから開始
+let assetsLoaded = 0;
+function tryStartGame() {
+  assetsLoaded++;
+  if (assetsLoaded === 2) {
+    gameLoop();
+  }
+}
+
+tileImage.onload = tryStartGame;
+playerImage.onload = tryStartGame;
